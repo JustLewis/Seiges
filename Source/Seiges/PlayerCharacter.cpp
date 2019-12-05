@@ -3,7 +3,9 @@
 
 #include "PlayerCharacter.h"
 #include "MainPlayerController.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -11,23 +13,37 @@ APlayerCharacter::APlayerCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	
 }
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter working"));
+
+	MainCamera = FindComponentByClass<UCameraComponent>();
+	if (!MainCamera) { UE_LOG(LogTemp, Error, TEXT("Main Camera is null pionter in %s"), *GetNameSafe(this)); }
+	//MainCamera->RelativeLocation = FVector(-50.f, 50.75f, 64.0f);
 	
 }
-
+///No it isn't... Weird
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	DrawDebugLine(GetWorld(),
+		LineTraceStart(),
+		LineTraceEnd(),
+		FColor::Red,
+		false,
+		-1.0f,
+		1.0f);
+	//UE_LOG(LogTemp, Warning, TEXT("ticking"));
+	
 }
 
-// Called to bind functionality to input
+// Called to bind functionality to input	
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -45,13 +61,13 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		
 		EnableInput(Cast<AMainPlayerController>(GetOwner()));
 
-		UE_LOG(LogTemp, Error, TEXT("Setting up input?"));
+		
 	}
+	else { UE_LOG(LogTemp, Error, TEXT("Setting up input failed for: %s"), *GetNameSafe(this)); }
 }
 
 void APlayerCharacter::MoveForward(float speed)
 {
-	//UE_LOG(LogTemp, Error, TEXT("Moving forward?"));
 	if (speed != 0)
 	{
 		AddMovementInput(GetActorForwardVector(), speed);
@@ -78,5 +94,45 @@ void APlayerCharacter::LookYaw(float amount)
 
 void APlayerCharacter::TestAction()
 {
-	UE_LOG(LogTemp, Error, TEXT("Pressing action?"));
+	UE_LOG(LogTemp, Error, TEXT("Testing action"))
+
+		DrawDebugLine(GetWorld(),
+			LineTraceStart(),
+			LineTraceEnd(),
+			FColor::Red,
+			false,
+			-1.0f,
+			1.0f);
+
+	DrawDebugSphere(GetWorld(), LineTraceHitResult().Location, 5.0f, 10, FColor::Red, false, 3.0f);
+	//LineTraceHitResult().
+
+}
+
+FVector APlayerCharacter::LineTraceStart()
+{
+	if (MainCamera == nullptr) { return FVector(0.0f); }
+	return MainCamera->GetComponentLocation();
+}
+
+FVector APlayerCharacter::LineTraceEnd()
+{
+	if (MainCamera == nullptr) { return FVector(0.0f); }
+	return MainCamera->GetComponentLocation() + (MainCamera->GetComponentRotation().Vector() * Reach);
+}
+
+FHitResult APlayerCharacter::LineTraceHitResult()
+{	
+	FHitResult LineTraceHit;
+	FCollisionQueryParams CollisionParams(FName(TEXT("")), false, this);
+
+	GetWorld()->LineTraceSingleByObjectType(
+		LineTraceHit,
+		LineTraceStart(),
+		LineTraceEnd(),
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),
+		CollisionParams);
+
+	return LineTraceHit;
+
 }

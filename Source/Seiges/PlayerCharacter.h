@@ -4,9 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Camera/CameraComponent.h"
 #include "PlayerCharacter.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class SEIGES_API APlayerCharacter : public ACharacter
 {
 	GENERATED_BODY()
@@ -14,6 +15,8 @@ class SEIGES_API APlayerCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
+
+	UCameraComponent* MainCamera;
 
 protected:
 	// Called when the game starts or when spawned
@@ -33,5 +36,12 @@ public:
 	void LookYaw(float amount);
 
 	void TestAction();
+
+	FVector LineTraceStart();
+	FVector LineTraceEnd();
+	FHitResult LineTraceHitResult();
+
+private:
+	float Reach = 5000.0f;
 
 };
