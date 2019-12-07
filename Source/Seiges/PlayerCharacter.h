@@ -40,6 +40,11 @@ public:
 	void LookYaw(float amount);
 
 	void Action();
+	void AltAction();
+
+	void CycleStructureListUp();
+	void CycleStructureListDown();
+	void ChangeActiveStructure();
 
 	FVector LineTraceStart();
 	FVector LineTraceEnd();
@@ -47,5 +52,6 @@ public:
 
 private:
 	float Reach = 5000.0f;
+	UINT StructureIterator = 0;
 
 };

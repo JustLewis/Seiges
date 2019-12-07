@@ -12,5 +12,5 @@ void AStructureControlled::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp,Warning,TEXT("Yay I'm a controlled structure and working too!"))
+	//UE_LOG(LogTemp,Warning,TEXT("Yay I'm a controlled structure and working too!"))
 }

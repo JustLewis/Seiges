@@ -33,7 +33,14 @@ protected:
 
 	UFUNCTION(BlueprintCallable,Category = StructureFunctions)
 	virtual void Death();
+
+	
 public:	
+
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
+
+	/*UFUNCTION(BlueprintCallable, Category = StructureFunctions)
+		virtual void CauseDamage(float DamageIn);*/
 
 	UFUNCTION(BlueprintCallable, Category = StructureFunctions)
 		virtual void SpawnWithLocationAndRotation(FVector LocationIn, FRotator RotationIn);

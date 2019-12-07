@@ -22,10 +22,9 @@ void APlayerCharacter::BeginPlay()
 
 	MainCamera = FindComponentByClass<UCameraComponent>();
 	if (!MainCamera) { UE_LOG(LogTemp, Error, TEXT("Main Camera is null pionter in %s"), *GetNameSafe(this)); }
-	//MainCamera->RelativeLocation = FVector(-50.f, 50.75f, 64.0f);
 	
 }
-///No it isn't... Weird
+
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
@@ -38,7 +37,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 		false,
 		-1.0f,
 		1.0f);
-	//UE_LOG(LogTemp, Warning, TEXT("ticking"));
+
 	
 }
 
@@ -57,6 +56,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInputComponent->BindAxis("LookYaw", this, &APlayerCharacter::LookYaw);
 
 		PlayerInputComponent->BindAction("Action",IE_Pressed, this, &APlayerCharacter::Action);
+		PlayerInputComponent->BindAction("AltAction",IE_Pressed, this, &APlayerCharacter::AltAction);
+		
+		PlayerInputComponent->BindAction("ScrollUp",IE_Pressed, this, &APlayerCharacter::CycleStructureListUp);
+		PlayerInputComponent->BindAction("ScrollDown",IE_Pressed, this, &APlayerCharacter::CycleStructureListDown);
+
 		
 		EnableInput(Cast<AMainPlayerController>(GetOwner()));
 
@@ -93,29 +97,64 @@ void APlayerCharacter::LookYaw(float amount)
 
 void APlayerCharacter::Action()
 {
-	UE_LOG(LogTemp, Error, TEXT("Testing action"))
+	//FString Text = StructureList[StructureIterator]->GetName();
+	//UE_LOG(LogTemp, Warning, TEXT("STructure is %s"), *Text);
 
-		if (StructureList[0] == nullptr) { UE_LOG(LogTemp, Error, TEXT("Structure list empty?")); return; }
-	FString Text = StructureList[0]->GetName();
-
-	UE_LOG(LogTemp, Warning, TEXT("STructure is %s"), *Text);
-
-	DrawDebugLine(GetWorld(),
-		LineTraceStart(),
-		LineTraceEnd(),
-		FColor::Red,
-		false,
-		-1.0f,
-		1.0f);
-
+	//DrawDebugLine(GetWorld(),
+	//	LineTraceStart(),
+	//	LineTraceEnd(),
+	//	FColor::Red,
+	//	false,
+	//	-1.0f,
+	//	1.0f);
 	DrawDebugSphere(GetWorld(), LineTraceHitResult().Location, 5.0f, 10, FColor::Red, false, 3.0f);
 
-	GetWorld()->SpawnActor<AStructuresBase>(StructureList[0], LineTraceHitResult().Location + FVector(0.0f,0.0f,10.0f), FRotator::ZeroRotator);
-
-	//StructureList[0]->SpawnWithLocationAndRotation(LineTraceHitResult().Location, FRotator::ZeroRotator);
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = NULL;
 	
-	//LineTraceHitResult().
+	
+	if (StructureList[StructureIterator] == nullptr) { UE_LOG(LogTemp, Error, TEXT("Structure list empty?")); return; }
+	GetWorld()->SpawnActor<AStructuresBase>(StructureList[StructureIterator], LineTraceHitResult().Location + FVector(0.0f,0.0f,10.0f), FRotator::ZeroRotator,SpawnParams);
 
+}
+
+void APlayerCharacter::AltAction()
+{
+	AActor* HitActor = LineTraceHitResult().GetActor();
+
+	if (HitActor)
+	{
+		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+		FDamageEvent DamageEvent(ValidDamageTypeClass);
+
+		HitActor->TakeDamage(1000.0f, DamageEvent, this->GetController(),this);
+	}
+	else { UE_LOG(LogTemp, Warning, TEXT("Not hit actor")) }
+}
+
+void APlayerCharacter::CycleStructureListUp()
+{
+	StructureIterator++;
+	if(!StructureList.IsValidIndex(StructureIterator))
+	{
+		StructureIterator = 0;
+	}
+	ChangeActiveStructure();
+}
+
+void APlayerCharacter::CycleStructureListDown()
+{
+	StructureIterator--;
+	if (!StructureList.IsValidIndex(StructureIterator))
+	{
+		StructureIterator = StructureList.Num() - 1; //Last index range
+	}
+	ChangeActiveStructure();
+}
+
+void APlayerCharacter::ChangeActiveStructure()
+{
+	//doesn't do anything yet.
 }
 
 FVector APlayerCharacter::LineTraceStart()
@@ -133,13 +172,20 @@ FVector APlayerCharacter::LineTraceEnd()
 FHitResult APlayerCharacter::LineTraceHitResult()
 {	
 	FHitResult LineTraceHit;
-	FCollisionQueryParams CollisionParams(FName(TEXT("")), false, this);
+	FCollisionQueryParams CollisionParams (FName(TEXT("")), false, this);
 
-	GetWorld()->LineTraceSingleByObjectType(
+	/*GetWorld()->LineTraceSingleByObjectType(
 		LineTraceHit,
 		LineTraceStart(),
 		LineTraceEnd(),
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),
+		CollisionParams);*/
+
+	GetWorld()->LineTraceSingleByChannel(
+		LineTraceHit,
+		LineTraceStart(),
+		LineTraceEnd(),
+		ECollisionChannel::ECC_WorldStatic,
 		CollisionParams);
 
 	return LineTraceHit;

@@ -18,7 +18,7 @@ void AStructuresBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp,Warning,TEXT("Yay I've spawned"))
+	UE_LOG(LogTemp, Warning, TEXT("%s has spawned and called Begin play from Base polymorphic class"), *GetNameSafe(this));
 	
 }
 
@@ -26,9 +26,31 @@ void AStructuresBase::Death()
 {
 	if (Health <= 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s has died"), *GetNameSafe(this));
+		//UE_LOG(LogTemp, Warning, TEXT("%s has died"), *GetNameSafe(this)); //This works
+		this->Destroy();
 	}
+
+
+
+
 }
+
+float AStructuresBase::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
+{
+	Health -= DamageAmount;
+
+	Death();
+	return DamageAmount;
+}
+
+
+//void AStructuresBase::CauseDamage(float DamageIn)
+//{
+//	Health -= DamageIn;
+//	Death();
+//}
+
+
 void AStructuresBase::SpawnWithLocationAndRotation(FVector LocationIn, FRotator RotationIn)
 {
 	UWorld* World = GetWorld();
@@ -46,7 +68,6 @@ void AStructuresBase::SpawnWithLocationAndRotation(FVector LocationIn, FRotator 
 void AStructuresBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
