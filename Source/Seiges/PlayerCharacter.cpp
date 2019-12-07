@@ -12,7 +12,6 @@ APlayerCharacter::APlayerCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 	
 }
 
@@ -57,7 +56,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInputComponent->BindAxis("LookPitch", this, &APlayerCharacter::LookPitch);
 		PlayerInputComponent->BindAxis("LookYaw", this, &APlayerCharacter::LookYaw);
 
-		PlayerInputComponent->BindAction("Action",IE_Pressed, this, &APlayerCharacter::TestAction);
+		PlayerInputComponent->BindAction("Action",IE_Pressed, this, &APlayerCharacter::Action);
 		
 		EnableInput(Cast<AMainPlayerController>(GetOwner()));
 
@@ -92,19 +91,29 @@ void APlayerCharacter::LookYaw(float amount)
 	AddControllerYawInput(amount);
 }
 
-void APlayerCharacter::TestAction()
+void APlayerCharacter::Action()
 {
 	UE_LOG(LogTemp, Error, TEXT("Testing action"))
 
-		DrawDebugLine(GetWorld(),
-			LineTraceStart(),
-			LineTraceEnd(),
-			FColor::Red,
-			false,
-			-1.0f,
-			1.0f);
+		if (StructureList[0] == nullptr) { UE_LOG(LogTemp, Error, TEXT("Structure list empty?")); return; }
+	FString Text = StructureList[0]->GetName();
+
+	UE_LOG(LogTemp, Warning, TEXT("STructure is %s"), *Text);
+
+	DrawDebugLine(GetWorld(),
+		LineTraceStart(),
+		LineTraceEnd(),
+		FColor::Red,
+		false,
+		-1.0f,
+		1.0f);
 
 	DrawDebugSphere(GetWorld(), LineTraceHitResult().Location, 5.0f, 10, FColor::Red, false, 3.0f);
+
+	GetWorld()->SpawnActor<AStructuresBase>(StructureList[0], LineTraceHitResult().Location + FVector(0.0f,0.0f,10.0f), FRotator::ZeroRotator);
+
+	//StructureList[0]->SpawnWithLocationAndRotation(LineTraceHitResult().Location, FRotator::ZeroRotator);
+	
 	//LineTraceHitResult().
 
 }

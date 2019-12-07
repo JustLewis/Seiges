@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
+#include "StructuresBase.h"
 #include "PlayerCharacter.generated.h"
 
 UCLASS(Blueprintable)
@@ -17,6 +18,9 @@ public:
 	APlayerCharacter();
 
 	UCameraComponent* MainCamera;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
+	TArray<UClass*> StructureList; //TODO May need to force garbage collection at some point.
 
 protected:
 	// Called when the game starts or when spawned
@@ -35,7 +39,7 @@ public:
 	void LookPitch(float amount);
 	void LookYaw(float amount);
 
-	void TestAction();
+	void Action();
 
 	FVector LineTraceStart();
 	FVector LineTraceEnd();
