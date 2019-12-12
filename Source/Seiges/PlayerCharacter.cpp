@@ -12,7 +12,14 @@ APlayerCharacter::APlayerCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
+	ActionState = new WeaponState;
+}
+
+APlayerCharacter::~APlayerCharacter()
+{
+	delete ActionState;
+	ActionState = 0;
+	BeginDestroy();
 }
 
 // Called when the game starts or when spawned
@@ -97,6 +104,13 @@ void APlayerCharacter::LookYaw(float amount)
 
 void APlayerCharacter::Action()
 {
+
+	MyPlayerState * state = ActionState->Action();
+	if (state != NULL)
+	{
+		delete ActionState;
+		ActionState = state;
+	}
 	//FString Text = StructureList[StructureIterator]->GetName();
 	//UE_LOG(LogTemp, Warning, TEXT("STructure is %s"), *Text);
 
@@ -120,6 +134,13 @@ void APlayerCharacter::Action()
 
 void APlayerCharacter::AltAction()
 {
+	MyPlayerState * state = ActionState->AltAction();
+	if (state != NULL)
+	{
+		delete ActionState;
+		ActionState = state;
+	}
+
 	AActor* HitActor = LineTraceHitResult().GetActor();
 
 	if (HitActor)
@@ -190,4 +211,24 @@ FHitResult APlayerCharacter::LineTraceHitResult()
 
 	return LineTraceHit;
 
+}
+
+MyPlayerState * WeaponState::Action()
+{
+	return new BuildState;
+}
+
+MyPlayerState * WeaponState::AltAction()
+{
+	return nullptr;
+}
+
+MyPlayerState * BuildState::Action()
+{
+	return nullptr;
+}
+
+MyPlayerState * BuildState::AltAction()
+{
+	return new WeaponState;;
 }
