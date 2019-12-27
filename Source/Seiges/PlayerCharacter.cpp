@@ -6,13 +6,18 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Math/UnrealMathUtility.h"
+
+
+#pragma region PlayerCharacter
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	ActionState = new WeaponState;
+	ActionState = nullptr;
+
 }
 
 APlayerCharacter::~APlayerCharacter()
@@ -26,6 +31,7 @@ APlayerCharacter::~APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	ActionState = new WeaponState;
 
 	MainCamera = FindComponentByClass<UCameraComponent>();
 	if (!MainCamera) { UE_LOG(LogTemp, Error, TEXT("Main Camera is null pionter in %s"), *GetNameSafe(this)); }
@@ -45,7 +51,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 		-1.0f,
 		1.0f);
 
-	
+	ActionState->Tick(this);
+
 }
 
 // Called to bind functionality to input	
@@ -68,10 +75,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInputComponent->BindAction("ScrollUp",IE_Pressed, this, &APlayerCharacter::CycleStructureListUp);
 		PlayerInputComponent->BindAction("ScrollDown",IE_Pressed, this, &APlayerCharacter::CycleStructureListDown);
 
+		PlayerInputComponent->BindAction("CycleMode", IE_Pressed, this, &APlayerCharacter::CycleMode);
 		
 		EnableInput(Cast<AMainPlayerController>(GetOwner()));
-
-		
 	}
 	else { UE_LOG(LogTemp, Error, TEXT("Setting up input failed for: %s"), *GetNameSafe(this)); }
 }
@@ -94,18 +100,24 @@ void APlayerCharacter::MoveRight(float speed)
 
 void APlayerCharacter::LookPitch(float amount)
 {
-	AddControllerPitchInput(-amount);
+	//if (bRotationEnabled) {
+		AddControllerPitchInput(-amount);
+	//}
 }
 
 void APlayerCharacter::LookYaw(float amount)
 {
-	AddControllerYawInput(amount);
+	if (bRotationEnabled)
+	{
+		AddControllerYawInput(amount);
+	}
+	ActionState->Rotate(this,amount);
 }
 
 void APlayerCharacter::Action()
 {
 
-	MyPlayerState * state = ActionState->Action();
+	MyPlayerState * state = ActionState->Action(this);
 	if (state != NULL)
 	{
 		delete ActionState;
@@ -121,36 +133,17 @@ void APlayerCharacter::Action()
 	//	false,
 	//	-1.0f,
 	//	1.0f);
-	DrawDebugSphere(GetWorld(), LineTraceHitResult().Location, 5.0f, 10, FColor::Red, false, 3.0f);
-
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = NULL;
 	
-	
-	if (StructureList[StructureIterator] == nullptr) { UE_LOG(LogTemp, Error, TEXT("Structure list empty?")); return; }
-	GetWorld()->SpawnActor<AStructuresBase>(StructureList[StructureIterator], LineTraceHitResult().Location + FVector(0.0f,0.0f,10.0f), FRotator::ZeroRotator,SpawnParams);
-
 }
 
 void APlayerCharacter::AltAction()
 {
-	MyPlayerState * state = ActionState->AltAction();
+	MyPlayerState * state = ActionState->AltAction(this);
 	if (state != NULL)
 	{
 		delete ActionState;
 		ActionState = state;
 	}
-
-	AActor* HitActor = LineTraceHitResult().GetActor();
-
-	if (HitActor)
-	{
-		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
-		FDamageEvent DamageEvent(ValidDamageTypeClass);
-
-		HitActor->TakeDamage(1000.0f, DamageEvent, this->GetController(),this);
-	}
-	else { UE_LOG(LogTemp, Warning, TEXT("Not hit actor")) }
 }
 
 void APlayerCharacter::CycleStructureListUp()
@@ -171,6 +164,17 @@ void APlayerCharacter::CycleStructureListDown()
 		StructureIterator = StructureList.Num() - 1; //Last index range
 	}
 	ChangeActiveStructure();
+}
+
+void APlayerCharacter::CycleMode()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Calling switch up"));
+	MyPlayerState * state = ActionState->CycleMode();
+	if (state != NULL)
+	{
+		delete ActionState;
+		ActionState = state;
+	}
 }
 
 void APlayerCharacter::ChangeActiveStructure()
@@ -213,22 +217,167 @@ FHitResult APlayerCharacter::LineTraceHitResult()
 
 }
 
-MyPlayerState * WeaponState::Action()
+void APlayerCharacter::SetControlledStructure(AStructuresBase * ActorIn)
+{
+	ControlledStructure = ActorIn;
+}
+
+AStructuresBase * APlayerCharacter::GetControlledStructure()
+{
+	return ControlledStructure;
+}
+
+#pragma endregion
+
+#pragma region WeaponState
+
+MyPlayerState * WeaponState::Action(APlayerCharacter* PlayerIn)
+{
+	bFiring = true;
+	return nullptr;
+}
+
+MyPlayerState * WeaponState::AltAction(APlayerCharacter* PlayerIn)
+{
+	bFiring = false;
+	return nullptr;
+}
+
+MyPlayerState * WeaponState::CycleMode()
 {
 	return new BuildState;
 }
 
-MyPlayerState * WeaponState::AltAction()
+void WeaponState::Tick(APlayerCharacter * PlayerIn)
 {
+	if (bFiring)
+	{
+		UWorld * World = PlayerIn->GetWorld();
+		if (World != NULL)
+		{
+			const FRotator PlayerRotation = PlayerIn->GetControlRotation();
+			const FVector Playerlocation = PlayerIn->MainCamera->GetComponentLocation() + FVector(0.0f,50.0f,0.0f);
+			float SprayAmount = PlayerIn->SprayAmount;
+			for (size_t i = 0; i < 3; i++) {
+
+				float XOffset = FMath::FRandRange(-SprayAmount, SprayAmount);
+				float YOffset = FMath::FRandRange(-SprayAmount, SprayAmount);
+
+				FActorSpawnParameters ActorSpawnParams;
+				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+				World->SpawnActor<ABaseProjectile>(PlayerIn->Projectile, Playerlocation +
+					(PlayerIn->MainCamera->GetComponentRotation().Vector() * 10.0f), PlayerRotation + FRotator(XOffset, YOffset, 0.0f), ActorSpawnParams);
+			}
+
+		}
+	}
+}
+
+
+
+#pragma endregion
+
+#pragma region BuildState
+
+MyPlayerState * BuildState::Action(APlayerCharacter* PlayerIn)
+{
+	DrawDebugSphere(PlayerIn->GetWorld(), PlayerIn->LineTraceHitResult().Location, 5.0f, 10, FColor::Red, false, 3.0f);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = NULL;
+
+	if (PlayerIn->StructureList[PlayerIn->GetStructureIterator()] == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Structure list empty?"));
+		return new BuildState; 
+	}
+
+	AStructuresBase* ActorSpawned =  PlayerIn->GetWorld()->SpawnActor<AStructuresBase>(
+								PlayerIn->StructureList[PlayerIn->GetStructureIterator()],
+								PlayerIn->LineTraceHitResult().Location + FVector(0.0f, 0.0f, 1.0f),
+								FRotator::ZeroRotator, SpawnParams);
+	PlayerIn->SetControlledStructure(ActorSpawned);
+	PlayerIn->bRotationEnabled = false;
+
+	return new BuildStateSecond;
+}
+
+MyPlayerState * BuildState::AltAction(APlayerCharacter* PlayerIn)
+{
+	AActor* HitActor = PlayerIn->LineTraceHitResult().GetActor();
+
+	if (HitActor)
+	{
+
+		//Unusual way to deal damage
+		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+		FDamageEvent DamageEvent(ValidDamageTypeClass);
+
+		HitActor->TakeDamage(1000.0f, DamageEvent, PlayerIn->GetController(), PlayerIn);
+	}
+	else { UE_LOG(LogTemp, Warning, TEXT("Not hit actor")) }
+
 	return nullptr;
 }
 
-MyPlayerState * BuildState::Action()
+MyPlayerState * BuildState::CycleMode()
 {
-	return nullptr;
+	return new WeaponState;
 }
 
-MyPlayerState * BuildState::AltAction()
+
+#pragma endregion
+
+#pragma region BuildStateSecond
+
+MyPlayerState * BuildStateSecond::Action(APlayerCharacter * PlayerIn)
 {
-	return new WeaponState;;
+	PlayerIn->SetControlledStructure(nullptr);
+	PlayerIn->bRotationEnabled = true;
+	return new BuildState;
 }
+
+MyPlayerState * BuildStateSecond::AltAction(APlayerCharacter * PlayerIn)
+{
+	AStructuresBase* Structure = PlayerIn->GetControlledStructure();
+	if (!Structure)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No controlled structure found"));
+		PlayerIn->bRotationEnabled = true;
+		return new BuildState;
+	}
+
+	
+	PlayerIn->SetControlledStructure(nullptr);
+
+	TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+	FDamageEvent DamageEvent(ValidDamageTypeClass);
+	Structure->TakeDamage(1000.0f, DamageEvent, PlayerIn->GetController(), PlayerIn);
+
+	PlayerIn->bRotationEnabled = true;
+	
+	return new BuildState;
+}
+
+MyPlayerState * BuildStateSecond::CycleMode()
+{
+	return new BuildState;
+}
+
+void BuildStateSecond::Rotate(APlayerCharacter* PlayerIn,float amount)
+{
+	AStructuresBase* Structure = PlayerIn->GetControlledStructure();
+	if (Structure)
+	{
+		//Structure->SetActorRotation(FQuat(0, 0, amount / 3, 1));
+		Structure->AddActorWorldRotation(FQuat(0, 0, amount / 3, 1), false, nullptr, ETeleportType::None);
+		return;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("No controlled structure found"));
+	}
+}
+
+#pragma endregion

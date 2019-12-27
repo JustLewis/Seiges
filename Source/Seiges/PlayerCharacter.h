@@ -6,45 +6,72 @@
 #include "GameFramework/Character.h"
 #include "Camera/CameraComponent.h"
 #include "StructuresBase.h"
+#include "Engine/engine.h"
+
+#include "BaseProjectile.h"
+
 #include "PlayerCharacter.generated.h"
-
-enum State
-{
-	StateWeapon,
-	StateBuild,
-	StateBuildExtended
-};
-
 
 class MyPlayerState
 {
 public:
-	virtual ~MyPlayerState() {};
+	virtual ~MyPlayerState() {}
+
 	virtual void Activate() {}
 	virtual void Deactivate() {}
 
-	virtual MyPlayerState* Action() { return NULL; }
-	virtual MyPlayerState* AltAction() { return NULL; }
-	virtual void CycleUp() {}
-	virtual void CycleDown() {}
+	virtual MyPlayerState* Action(APlayerCharacter* PlayerIn) { return NULL; }
+	virtual MyPlayerState* AltAction(APlayerCharacter* PlayerIn) { return NULL; }
+	virtual MyPlayerState* CycleMode() { return NULL; }
+	
+	virtual void Rotate(APlayerCharacter* PlayerIn,float amount) {};
+
+	virtual void Tick(APlayerCharacter* PlayerIn) {};
+
+	virtual void ScrollUp() {}
+	virtual void ScrollDown() {}
 };
 
 class WeaponState : public MyPlayerState
 {
 public:
-	WeaponState() {};
+	WeaponState() { GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, "Activating weapons", true, FVector2D(3.0f, 3.0f)); }
+
 	~WeaponState() { UE_LOG(LogTemp, Warning, TEXT("Yes I am weapon state being deleted correctly.")) }
-	MyPlayerState* Action() override;
-	MyPlayerState* AltAction() override;
+	MyPlayerState* Action(APlayerCharacter* PlayerIn) override;
+	MyPlayerState* AltAction(APlayerCharacter* PlayerIn) override;
+	MyPlayerState* CycleMode() override;
+
+	virtual void Tick(APlayerCharacter* PlayerIn) override;
+
+private:
+	bool bFiring = false;
+
+	//
 };
 
 class BuildState : public MyPlayerState
 {
 public:
-	BuildState() {};
+	BuildState() { GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, "Activating Build mode",true,FVector2D(3.0f,3.0f)); }
 	~BuildState() { UE_LOG(LogTemp, Warning, TEXT("Yes I am build state being deleted correctly.")) }
-	MyPlayerState* Action() override;
-	MyPlayerState* AltAction() override;
+	MyPlayerState* Action(APlayerCharacter* PlayerIn) override;
+	MyPlayerState* AltAction(APlayerCharacter* PlayerIn) override;
+	MyPlayerState* CycleMode() override;
+
+};
+
+class BuildStateSecond : public MyPlayerState
+{
+public:
+	BuildStateSecond() { GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, "Activated Buildmode part 2", true, FVector2D(3.0f, 3.0f)); }
+	~BuildStateSecond() {};
+	MyPlayerState* Action(APlayerCharacter* PlayerIn) override;
+	MyPlayerState* AltAction(APlayerCharacter* PlayerIn) override;
+	MyPlayerState* CycleMode() override;
+
+	void Rotate(APlayerCharacter* PlayerIn, float amount) override;
+
 };
 
 
@@ -60,8 +87,14 @@ public:
 
 	UCameraComponent* MainCamera;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	TSubclassOf<class ABaseProjectile> Projectile;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
 	TArray<UClass*> StructureList; //TODO May need to force garbage collection at some point.
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	float SprayAmount;
 
 protected:
 	// Called when the game starts or when spawned
@@ -85,25 +118,36 @@ public:
 
 	void CycleStructureListUp();
 	void CycleStructureListDown();
+
+	void CycleMode();
+
 	void ChangeActiveStructure();
 
+
+	FHitResult LineTraceHitResult();
+	UINT GetStructureIterator() { return StructureIterator; }
+
+	void SetControlledStructure(AStructuresBase* ActorIn);
+	AStructuresBase* GetControlledStructure();
 	
+	bool bRotationEnabled = true;
 
 private:
 	float Reach = 5000.0f;
 	UINT StructureIterator = 0;
-
+	
 	MyPlayerState * ActionState;
 	
+	AStructuresBase * ControlledStructure = nullptr;
 	
-	//Needs to be a uproperty to be handled in memory safely but making it uproperty causes more problems than it solves...
+	//Needs to be a uproperty to be handled in memory by UEs smart pointers but making it uproperty causes more problems than it solves...
 	//UPROPERTY()
 	//TArray<MyPlayerState*> StateArray;
 	//UINT StateIterator = 0;
 
 	FVector LineTraceStart();
 	FVector LineTraceEnd();
-	FHitResult LineTraceHitResult();
+	
 
 };
 
