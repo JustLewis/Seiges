@@ -20,7 +20,7 @@ public:
 	ABaseProjectile();
 
 	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
-		class USphereComponent* CollisionComp;
+	class USphereComponent* CollisionComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovement;
@@ -32,7 +32,7 @@ public:
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 private:
-
+	
 	
 	
 

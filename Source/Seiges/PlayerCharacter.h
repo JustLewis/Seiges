@@ -8,7 +8,8 @@
 #include "StructuresBase.h"
 #include "Engine/engine.h"
 
-#include "BaseProjectile.h"
+//#include "BaseProjectile.h"
+#include "ProjectileSpawnLocation.h"
 
 #include "PlayerCharacter.generated.h"
 
@@ -28,8 +29,8 @@ public:
 
 	virtual void Tick(APlayerCharacter* PlayerIn) {};
 
-	virtual void ScrollUp() {}
-	virtual void ScrollDown() {}
+	virtual void ScrollUp(APlayerCharacter* PlayerIn) {}
+	virtual void ScrollDown(APlayerCharacter* PlayerIn) {}
 };
 
 class WeaponState : public MyPlayerState
@@ -42,7 +43,7 @@ public:
 	MyPlayerState* AltAction(APlayerCharacter* PlayerIn) override;
 	MyPlayerState* CycleMode() override;
 
-	virtual void Tick(APlayerCharacter* PlayerIn) override;
+	void Tick(APlayerCharacter* PlayerIn) override;
 
 private:
 	bool bFiring = false;
@@ -58,6 +59,11 @@ public:
 	MyPlayerState* Action(APlayerCharacter* PlayerIn) override;
 	MyPlayerState* AltAction(APlayerCharacter* PlayerIn) override;
 	MyPlayerState* CycleMode() override;
+
+	void Tick(APlayerCharacter* PlayerIn) override;
+
+	void ScrollUp(APlayerCharacter* PlayerIn) override;
+	void ScrollDown(APlayerCharacter* PlayerIn) override;
 
 };
 
@@ -87,8 +93,7 @@ public:
 
 	UCameraComponent* MainCamera;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
-	TSubclassOf<class ABaseProjectile> Projectile;
+	UProjectileSpawnLocation* NozzleLocation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
 	TArray<UClass*> StructureList; //TODO May need to force garbage collection at some point.
@@ -116,17 +121,16 @@ public:
 	void Action();
 	void AltAction();
 
-	void CycleStructureListUp();
-	void CycleStructureListDown();
+	void ScrollUp();
+	void ScrollDown();
 
 	void CycleMode();
-
-	void ChangeActiveStructure();
 
 
 	FHitResult LineTraceHitResult();
 	UINT GetStructureIterator() { return StructureIterator; }
-
+	void IncrementStuctureIterator(bool bIsPositiveIncrement);
+	
 	void SetControlledStructure(AStructuresBase* ActorIn);
 	AStructuresBase* GetControlledStructure();
 	

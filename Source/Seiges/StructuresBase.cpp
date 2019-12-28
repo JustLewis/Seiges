@@ -19,7 +19,18 @@ void AStructuresBase::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp, Warning, TEXT("%s has spawned and called Begin play from Base polymorphic class"), *GetNameSafe(this));
+
+	Mesh = FindComponentByClass<UStaticMeshComponent>();
+	if (Mesh == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("%s has no static mesh component for collisions"), *GetNameSafe(this));
+		return;
+		
+	}
 	
+	Mesh->CanEditSimulatePhysics();
+	Mesh->SetSimulatePhysics(false);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 }
 
 void AStructuresBase::Death()
@@ -30,9 +41,19 @@ void AStructuresBase::Death()
 		this->Destroy();
 	}
 
+}
 
+void AStructuresBase::Activate()
+{
+	if (Mesh == nullptr)
+	{
+		return;
+	}
 
-
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetSimulatePhysics(true);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	
 }
 
 float AStructuresBase::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
@@ -42,13 +63,6 @@ float AStructuresBase::TakeDamage(float DamageAmount, FDamageEvent const & Damag
 	Death();
 	return DamageAmount;
 }
-
-
-//void AStructuresBase::CauseDamage(float DamageIn)
-//{
-//	Health -= DamageIn;
-//	Death();
-//}
 
 
 void AStructuresBase::SpawnWithLocationAndRotation(FVector LocationIn, FRotator RotationIn)

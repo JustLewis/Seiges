@@ -35,6 +35,9 @@ void APlayerCharacter::BeginPlay()
 
 	MainCamera = FindComponentByClass<UCameraComponent>();
 	if (!MainCamera) { UE_LOG(LogTemp, Error, TEXT("Main Camera is null pionter in %s"), *GetNameSafe(this)); }
+
+	NozzleLocation = FindComponentByClass<UProjectileSpawnLocation>();
+	if (!NozzleLocation) { UE_LOG(LogTemp, Error, TEXT("NozzleLocation is null pointer in %s"), *GetNameSafe(this)); }
 	
 }
 
@@ -72,8 +75,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		PlayerInputComponent->BindAction("Action",IE_Pressed, this, &APlayerCharacter::Action);
 		PlayerInputComponent->BindAction("AltAction",IE_Pressed, this, &APlayerCharacter::AltAction);
 		
-		PlayerInputComponent->BindAction("ScrollUp",IE_Pressed, this, &APlayerCharacter::CycleStructureListUp);
-		PlayerInputComponent->BindAction("ScrollDown",IE_Pressed, this, &APlayerCharacter::CycleStructureListDown);
+		PlayerInputComponent->BindAction("ScrollUp",IE_Pressed, this, &APlayerCharacter::ScrollUp);
+		PlayerInputComponent->BindAction("ScrollDown",IE_Pressed, this, &APlayerCharacter::ScrollDown);
 
 		PlayerInputComponent->BindAction("CycleMode", IE_Pressed, this, &APlayerCharacter::CycleMode);
 		
@@ -116,23 +119,12 @@ void APlayerCharacter::LookYaw(float amount)
 
 void APlayerCharacter::Action()
 {
-
 	MyPlayerState * state = ActionState->Action(this);
 	if (state != NULL)
 	{
 		delete ActionState;
 		ActionState = state;
 	}
-	//FString Text = StructureList[StructureIterator]->GetName();
-	//UE_LOG(LogTemp, Warning, TEXT("STructure is %s"), *Text);
-
-	//DrawDebugLine(GetWorld(),
-	//	LineTraceStart(),
-	//	LineTraceEnd(),
-	//	FColor::Red,
-	//	false,
-	//	-1.0f,
-	//	1.0f);
 	
 }
 
@@ -146,29 +138,18 @@ void APlayerCharacter::AltAction()
 	}
 }
 
-void APlayerCharacter::CycleStructureListUp()
+void APlayerCharacter::ScrollUp()
 {
-	StructureIterator++;
-	if(!StructureList.IsValidIndex(StructureIterator))
-	{
-		StructureIterator = 0;
-	}
-	ChangeActiveStructure();
+	ActionState->ScrollUp(this);
 }
 
-void APlayerCharacter::CycleStructureListDown()
+void APlayerCharacter::ScrollDown()
 {
-	StructureIterator--;
-	if (!StructureList.IsValidIndex(StructureIterator))
-	{
-		StructureIterator = StructureList.Num() - 1; //Last index range
-	}
-	ChangeActiveStructure();
+	ActionState->ScrollDown(this);
 }
 
 void APlayerCharacter::CycleMode()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Calling switch up"));
 	MyPlayerState * state = ActionState->CycleMode();
 	if (state != NULL)
 	{
@@ -177,10 +158,6 @@ void APlayerCharacter::CycleMode()
 	}
 }
 
-void APlayerCharacter::ChangeActiveStructure()
-{
-	//doesn't do anything yet.
-}
 
 FVector APlayerCharacter::LineTraceStart()
 {
@@ -198,6 +175,8 @@ FHitResult APlayerCharacter::LineTraceHitResult()
 {	
 	FHitResult LineTraceHit;
 	FCollisionQueryParams CollisionParams (FName(TEXT("")), false, this);
+
+	CollisionParams.AddIgnoredActor(ControlledStructure);
 
 	/*GetWorld()->LineTraceSingleByObjectType(
 		LineTraceHit,
@@ -217,6 +196,28 @@ FHitResult APlayerCharacter::LineTraceHitResult()
 
 }
 
+void APlayerCharacter::IncrementStuctureIterator(bool bIsPositiveIncrement)
+{
+	if (bIsPositiveIncrement) 
+	{
+		StructureIterator++;
+		if (!StructureList.IsValidIndex(StructureIterator))
+		{
+			StructureIterator = 0;
+			return;
+		}
+	}
+	else
+	{
+		StructureIterator--;
+		if (!StructureList.IsValidIndex(StructureIterator))
+		{
+			StructureIterator = StructureList.Num() - 1; //Last index range
+			return;
+		}
+	}
+}
+
 void APlayerCharacter::SetControlledStructure(AStructuresBase * ActorIn)
 {
 	ControlledStructure = ActorIn;
@@ -234,12 +235,14 @@ AStructuresBase * APlayerCharacter::GetControlledStructure()
 MyPlayerState * WeaponState::Action(APlayerCharacter* PlayerIn)
 {
 	bFiring = true;
+	PlayerIn->NozzleLocation->SetFiring(true);
 	return nullptr;
 }
 
 MyPlayerState * WeaponState::AltAction(APlayerCharacter* PlayerIn)
 {
 	bFiring = false;
+	PlayerIn->NozzleLocation->SetFiring(false);
 	return nullptr;
 }
 
@@ -250,30 +253,31 @@ MyPlayerState * WeaponState::CycleMode()
 
 void WeaponState::Tick(APlayerCharacter * PlayerIn)
 {
-	if (bFiring)
-	{
-		UWorld * World = PlayerIn->GetWorld();
-		if (World != NULL)
-		{
-			const FRotator PlayerRotation = PlayerIn->GetControlRotation();
-			const FVector Playerlocation = PlayerIn->MainCamera->GetComponentLocation() + FVector(0.0f,50.0f,0.0f);
-			float SprayAmount = PlayerIn->SprayAmount;
-			for (size_t i = 0; i < 3; i++) {
+	//if (bFiring)
+	//{
+	//	//PlayerIn->NozzleLocation->SpawnProjectileWithVelocity(1000.0f);
 
-				float XOffset = FMath::FRandRange(-SprayAmount, SprayAmount);
-				float YOffset = FMath::FRandRange(-SprayAmount, SprayAmount);
 
-				FActorSpawnParameters ActorSpawnParams;
-				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+	//	/*UWorld * World = PlayerIn->GetWorld();
+	//	if (World != NULL)
+	//	{
+	//		const FRotator PlayerRotation = PlayerIn->GetControlRotation();
+	//		const FVector Playerlocation = PlayerIn->MainCamera->GetComponentLocation() + FVector(0.0f,50.0f,0.0f);
+	//		float SprayAmount = PlayerIn->SprayAmount;
+	//		for (size_t i = 0; i < 3; i++) {
 
-				World->SpawnActor<ABaseProjectile>(PlayerIn->Projectile, Playerlocation +
-					(PlayerIn->MainCamera->GetComponentRotation().Vector() * 10.0f), PlayerRotation + FRotator(XOffset, YOffset, 0.0f), ActorSpawnParams);
-			}
+	//			float XOffset = FMath::FRandRange(-SprayAmount, SprayAmount);
+	//			float YOffset = FMath::FRandRange(-SprayAmount, SprayAmount);
 
-		}
-	}
+	//			FActorSpawnParameters ActorSpawnParams;
+	//			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+
+	//			World->SpawnActor<ABaseProjectile>(PlayerIn->Projectile, Playerlocation +
+	//				(PlayerIn->MainCamera->GetComponentRotation().Vector() * 10.0f), PlayerRotation + FRotator(XOffset, YOffset, 0.0f), ActorSpawnParams);
+	//		}
+	//	}*/
+	//}
 }
-
 
 
 #pragma endregion
@@ -284,7 +288,7 @@ MyPlayerState * BuildState::Action(APlayerCharacter* PlayerIn)
 {
 	DrawDebugSphere(PlayerIn->GetWorld(), PlayerIn->LineTraceHitResult().Location, 5.0f, 10, FColor::Red, false, 3.0f);
 
-	FActorSpawnParameters SpawnParams;
+	/*FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = NULL;
 
 	if (PlayerIn->StructureList[PlayerIn->GetStructureIterator()] == nullptr)
@@ -297,7 +301,8 @@ MyPlayerState * BuildState::Action(APlayerCharacter* PlayerIn)
 								PlayerIn->StructureList[PlayerIn->GetStructureIterator()],
 								PlayerIn->LineTraceHitResult().Location + FVector(0.0f, 0.0f, 1.0f),
 								FRotator::ZeroRotator, SpawnParams);
-	PlayerIn->SetControlledStructure(ActorSpawned);
+	PlayerIn->SetControlledStructure(ActorSpawned);*/
+	
 	PlayerIn->bRotationEnabled = false;
 
 	return new BuildStateSecond;
@@ -309,7 +314,6 @@ MyPlayerState * BuildState::AltAction(APlayerCharacter* PlayerIn)
 
 	if (HitActor)
 	{
-
 		//Unusual way to deal damage
 		TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
 		FDamageEvent DamageEvent(ValidDamageTypeClass);
@@ -326,13 +330,84 @@ MyPlayerState * BuildState::CycleMode()
 	return new WeaponState;
 }
 
+//TODO this is causing a crash.
+void BuildState::Tick(APlayerCharacter * PlayerIn)
+{
+	AStructuresBase* Structure = PlayerIn->GetControlledStructure();
+	if (Structure == nullptr)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = NULL;
 
+		if (PlayerIn->StructureList[PlayerIn->GetStructureIterator()] == nullptr)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Structure list empty?"));//Spam much?
+			return;
+		}
+
+		AStructuresBase* ActorSpawned = PlayerIn->GetWorld()->SpawnActor<AStructuresBase>(
+			PlayerIn->StructureList[PlayerIn->GetStructureIterator()],
+			PlayerIn->LineTraceHitResult().Location + FVector(0.0f, 0.0f, 1.0f),
+			FRotator::ZeroRotator, SpawnParams);
+		PlayerIn->SetControlledStructure(ActorSpawned);
+	}
+	else
+	{
+		Structure->SetActorLocation(PlayerIn->LineTraceHitResult().Location, false, nullptr, ETeleportType::None);
+	}
+
+}
+void BuildState::ScrollUp(APlayerCharacter * PlayerIn)
+{
+	PlayerIn->IncrementStuctureIterator(true);
+
+	AStructuresBase* Structure = PlayerIn->GetControlledStructure();
+	if (!Structure)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No controlled structure found"));
+		PlayerIn->bRotationEnabled = true;
+		return;
+	}
+
+	PlayerIn->SetControlledStructure(nullptr);
+
+	//Destroy structure
+	TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+	FDamageEvent DamageEvent(ValidDamageTypeClass);
+	Structure->TakeDamage(1000.0f, DamageEvent, PlayerIn->GetController(), PlayerIn);
+
+}
+void BuildState::ScrollDown(APlayerCharacter * PlayerIn)
+{
+	PlayerIn->IncrementStuctureIterator(true);
+
+	AStructuresBase* Structure = PlayerIn->GetControlledStructure();
+	if (!Structure)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No controlled structure found"));
+		PlayerIn->bRotationEnabled = true;
+		return;
+	}
+
+	PlayerIn->SetControlledStructure(nullptr);
+
+	//Destroy structure
+	TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+	FDamageEvent DamageEvent(ValidDamageTypeClass);
+	Structure->TakeDamage(1000.0f, DamageEvent, PlayerIn->GetController(), PlayerIn);
+}
 #pragma endregion
 
 #pragma region BuildStateSecond
 
 MyPlayerState * BuildStateSecond::Action(APlayerCharacter * PlayerIn)
 {
+	AStructuresBase* Structure = PlayerIn->GetControlledStructure();
+	if (Structure != nullptr)
+	{
+	Structure->Activate();
+	}
+
 	PlayerIn->SetControlledStructure(nullptr);
 	PlayerIn->bRotationEnabled = true;
 	return new BuildState;
@@ -347,10 +422,10 @@ MyPlayerState * BuildStateSecond::AltAction(APlayerCharacter * PlayerIn)
 		PlayerIn->bRotationEnabled = true;
 		return new BuildState;
 	}
-
 	
 	PlayerIn->SetControlledStructure(nullptr);
 
+	//Destroy structure
 	TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
 	FDamageEvent DamageEvent(ValidDamageTypeClass);
 	Structure->TakeDamage(1000.0f, DamageEvent, PlayerIn->GetController(), PlayerIn);

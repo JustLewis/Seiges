@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Components/StaticMeshComponent.h"
 #include "StructuresBase.generated.h"
 
 /*
@@ -29,13 +30,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = Stats)
 	float Health;
 
-
-
 	UFUNCTION(BlueprintCallable,Category = StructureFunctions)
 	virtual void Death();
 
+	UStaticMeshComponent* Mesh = nullptr;
+
+
 	
 public:	
+
+	UFUNCTION(BlueprintCallable, Category = StructureFunctions)
+	virtual void Activate();
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const & DamageEvent, class AController * EventInstigator, AActor * DamageCauser) override;
 
