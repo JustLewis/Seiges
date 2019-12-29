@@ -150,7 +150,7 @@ void APlayerCharacter::ScrollDown()
 
 void APlayerCharacter::CycleMode()
 {
-	MyPlayerState * state = ActionState->CycleMode();
+	MyPlayerState * state = ActionState->CycleMode(this);
 	if (state != NULL)
 	{
 		delete ActionState;
@@ -246,7 +246,7 @@ MyPlayerState * WeaponState::AltAction(APlayerCharacter* PlayerIn)
 	return nullptr;
 }
 
-MyPlayerState * WeaponState::CycleMode()
+MyPlayerState * WeaponState::CycleMode(APlayerCharacter* PlayerIn)
 {
 	return new BuildState;
 }
@@ -325,8 +325,23 @@ MyPlayerState * BuildState::AltAction(APlayerCharacter* PlayerIn)
 	return nullptr;
 }
 
-MyPlayerState * BuildState::CycleMode()
+MyPlayerState * BuildState::CycleMode(APlayerCharacter* PlayerIn)
 {
+	AStructuresBase* Structure = PlayerIn->GetControlledStructure();
+	if (!Structure)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No controlled structure found"));
+		PlayerIn->bRotationEnabled = true;
+		return new WeaponState;
+	}
+
+	PlayerIn->SetControlledStructure(nullptr);
+
+	//Destroy structure
+	TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+	FDamageEvent DamageEvent(ValidDamageTypeClass);
+	Structure->TakeDamage(1000.0f, DamageEvent, PlayerIn->GetController(), PlayerIn);
+
 	return new WeaponState;
 }
 
@@ -435,7 +450,7 @@ MyPlayerState * BuildStateSecond::AltAction(APlayerCharacter * PlayerIn)
 	return new BuildState;
 }
 
-MyPlayerState * BuildStateSecond::CycleMode()
+MyPlayerState * BuildStateSecond::CycleMode(APlayerCharacter* PlayerIn)
 {
 	return new BuildState;
 }

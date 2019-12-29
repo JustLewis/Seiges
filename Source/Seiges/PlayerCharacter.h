@@ -23,7 +23,7 @@ public:
 
 	virtual MyPlayerState* Action(APlayerCharacter* PlayerIn) { return NULL; }
 	virtual MyPlayerState* AltAction(APlayerCharacter* PlayerIn) { return NULL; }
-	virtual MyPlayerState* CycleMode() { return NULL; }
+	virtual MyPlayerState* CycleMode(APlayerCharacter* PlayerIn) { return NULL; }
 	
 	virtual void Rotate(APlayerCharacter* PlayerIn,float amount) {};
 
@@ -41,7 +41,7 @@ public:
 	~WeaponState() { UE_LOG(LogTemp, Warning, TEXT("Yes I am weapon state being deleted correctly.")) }
 	MyPlayerState* Action(APlayerCharacter* PlayerIn) override;
 	MyPlayerState* AltAction(APlayerCharacter* PlayerIn) override;
-	MyPlayerState* CycleMode() override;
+	MyPlayerState* CycleMode(APlayerCharacter* PlayerIn) override;
 
 	void Tick(APlayerCharacter* PlayerIn) override;
 
@@ -56,9 +56,10 @@ class BuildState : public MyPlayerState
 public:
 	BuildState() { GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, "Activating Build mode",true,FVector2D(3.0f,3.0f)); }
 	~BuildState() { UE_LOG(LogTemp, Warning, TEXT("Yes I am build state being deleted correctly.")) }
+	
 	MyPlayerState* Action(APlayerCharacter* PlayerIn) override;
 	MyPlayerState* AltAction(APlayerCharacter* PlayerIn) override;
-	MyPlayerState* CycleMode() override;
+	MyPlayerState* CycleMode(APlayerCharacter* PlayerIn) override;
 
 	void Tick(APlayerCharacter* PlayerIn) override;
 
@@ -74,7 +75,7 @@ public:
 	~BuildStateSecond() {};
 	MyPlayerState* Action(APlayerCharacter* PlayerIn) override;
 	MyPlayerState* AltAction(APlayerCharacter* PlayerIn) override;
-	MyPlayerState* CycleMode() override;
+	MyPlayerState* CycleMode(APlayerCharacter* PlayerIn) override;
 
 	void Rotate(APlayerCharacter* PlayerIn, float amount) override;
 
