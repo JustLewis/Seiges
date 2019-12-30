@@ -2,6 +2,10 @@
 
 
 #include "AISpawner.h"
+//#include "Engine.h" //massive header... Shouldn't need this
+
+#include "Engine/World.h"
+
 
 // Sets default values
 AAISpawner::AAISpawner()
@@ -15,6 +19,28 @@ AAISpawner::AAISpawner()
 void AAISpawner::BeginPlay()
 {
 	Super::BeginPlay();
+	UWorld* World = GetWorld();
+	if (World)
+	{	//World is fine, VS is just silly.
+		World->GetTimerManager().SetTimer(BotSpawnTimerHandle, this, &AAISpawner::SpawnBot, 1.0f, true, TimeBetweenSpawns);
+	}
+}
+
+void AAISpawner::SpawnBot()
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+
+	if (BotList[0] == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Structure list empty?"));
+		return;
+	}
+
+	AAICharacterBase* ActorSpawned = GetWorld()->SpawnActor<AAICharacterBase>(
+									BotList[0],
+									GetActorLocation(),
+									FRotator::ZeroRotator, SpawnParams);
 	
 }
 
@@ -22,6 +48,23 @@ void AAISpawner::BeginPlay()
 void AAISpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	/*TimeSinceSpawn += DeltaTime;
+	if (TimeSinceSpawn > TimeBetweenSpawns)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Spawning"))
+		TimeSinceSpawn = 0.0f;
+	}*/
 
 }
+
+void AAISpawner::BeginDestroy()
+{
+
+
+
+	Super::BeginDestroy();
+}
+
+
 

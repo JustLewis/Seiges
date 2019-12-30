@@ -15,6 +15,9 @@ public:
 	// Sets default values for this character's properties
 	AAICharacterBase();
 
+	UFUNCTION(BlueprintCallable, Category = AIFunctions)
+	void SetAITarget() {}; //TODO make this.
+
 	
 
 protected:

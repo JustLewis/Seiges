@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "AICharacterBase.h"
 #include "AISpawner.generated.h"
 
 UCLASS(Blueprintable)
@@ -17,20 +18,26 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = Bots)
 	TArray<UClass*> BotList;
 
-	UPROPERTY()
-	TArray<UClass*> ActiveBotList;
+	//UPROPERTY()
+	//TArray<UClass*> ActiveBotList;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWRite, Category = Bots)
 	float TimeBetweenSpawns;
+
+	FTimerHandle BotSpawnTimerHandle;
+
+	UFUNCTION()
+	void SpawnBot();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	float TimeSinceSpawn;
+	
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void BeginDestroy() override;
 };
