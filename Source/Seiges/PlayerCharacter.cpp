@@ -80,6 +80,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		PlayerInputComponent->BindAction("CycleMode", IE_Pressed, this, &APlayerCharacter::CycleMode);
 		
+		PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &APlayerCharacter::Jump);
+		
 		EnableInput(Cast<AMainPlayerController>(GetOwner()));
 	}
 	else { UE_LOG(LogTemp, Error, TEXT("Setting up input failed for: %s"), *GetNameSafe(this)); }
@@ -115,6 +117,11 @@ void APlayerCharacter::LookYaw(float amount)
 		AddControllerYawInput(amount);
 	}
 	ActionState->Rotate(this,amount);
+}
+
+void APlayerCharacter::Jump()
+{
+	ACharacter::Jump();	
 }
 
 void APlayerCharacter::Action()

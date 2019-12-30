@@ -39,7 +39,7 @@ void AAISpawner::SpawnBot()
 
 	AAICharacterBase* ActorSpawned = GetWorld()->SpawnActor<AAICharacterBase>(
 									BotList[0],
-									GetActorLocation(),
+									GetActorLocation() + FVector(0.0f, 0.0f, -50.0f),
 									FRotator::ZeroRotator, SpawnParams);
 	
 }

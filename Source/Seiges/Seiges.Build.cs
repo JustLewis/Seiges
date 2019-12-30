@@ -10,6 +10,10 @@ public class Seiges : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
 
+        //Mine from UnrealEngine 4.X Scripting Cookbook.
+        ///Need this to attach an AIBlackBoard to the AI class.
+        PublicDependencyModuleNames.AddRange(new string[] { "AIModule","GameplayTasks" });
+
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI

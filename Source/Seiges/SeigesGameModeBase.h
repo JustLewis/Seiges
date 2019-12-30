@@ -13,5 +13,7 @@ UCLASS()
 class SEIGES_API ASeigesGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
 	
 };

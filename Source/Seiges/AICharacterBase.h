@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "AICharacterBase.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class SEIGES_API AAICharacterBase : public ACharacter
 {
 	GENERATED_BODY()
@@ -15,10 +15,12 @@ public:
 	// Sets default values for this character's properties
 	AAICharacterBase();
 
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = AIFunctions)
+		class UBehaviorTree* BehaviorTree;
+
 	UFUNCTION(BlueprintCallable, Category = AIFunctions)
 	void SetAITarget() {}; //TODO make this.
 
-	
 
 protected:
 	// Called when the game starts or when spawned

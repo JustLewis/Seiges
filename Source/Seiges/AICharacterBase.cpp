@@ -19,6 +19,8 @@ void AAICharacterBase::BeginPlay()
 	Mesh = FindComponentByClass<UStaticMeshComponent>();
 	if(Mesh == nullptr) {UE_LOG(LogTemp,Error,TEXT("Missing static mesh for %s"),*GetNameSafe(this)) }
 
+	
+
 }
 
 // Called every frame

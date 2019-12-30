@@ -102,6 +102,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
 	float SprayAmount;
 
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -118,6 +119,8 @@ public:
 
 	void LookPitch(float amount);
 	void LookYaw(float amount);
+
+	void Jump();
 
 	void Action();
 	void AltAction();
