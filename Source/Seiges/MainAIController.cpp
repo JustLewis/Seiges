@@ -2,29 +2,36 @@
 
 
 #include "MainAIController.h"
-#include "AICharacterBase.h"
-#include "BehaviorTree/BehaviorTree.h"
+//#include "BehaviorTree/BehaviorTree.h"
+#include "AICharacter.h"
+#include "StructureToDefend.h"
 
 AMainAIController::AMainAIController()
 {
-	BTComp = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTree Component"));
-	BBComp = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackBoard Component"));
+	BehaviorComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("Behavior componenet"));
+	BlackBoardComponent = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackBoard Component"));
+
 }
 
 void AMainAIController::OnPossess(APawn * InPawn)
 {
-	if (InPawn != nullptr) {
-		auto Character = Cast<AAICharacterBase>(InPawn);
+	Super::OnPossess(InPawn);
 
-		if (Character && Character->BehaviorTree)
-		{
-			BBComp->InitializeBlackboard(*Character->BehaviorTree->BlackboardAsset);
-			TargetKeyID = BBComp->GetKeyID("Target"); //Key in black board.
-			BTComp->StartTree(*Character->BehaviorTree);
-		}
-	}
-	else 
+	AAICharacter* ControlledCharacter = Cast<AAICharacter>(InPawn);
+
+	if (InPawn != nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("AI is getting no Pawn"));
+		BlackBoardComponent->InitializeBlackboard(*(ControlledCharacter->BehaviorTree->BlackboardAsset));//Hope this works
+		TargetKeyID = BlackBoardComponent->GetKeyID("TheTarget");
+		BehaviorComponent->StartTree(*(ControlledCharacter->BehaviorTree)); //This is a weird use of pointers. 
 	}
+	else {
+		UE_LOG(LogTemp,Error,TEXT("InPawn is Nullptr"))
+	}
+
+}
+
+UBlackboardComponent * AMainAIController::GetBlackBoard()
+{
+	return BlackBoardComponent;
 }

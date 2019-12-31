@@ -4,30 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "AICharacterBase.generated.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "AICharacter.generated.h"
 
-UCLASS(Blueprintable)
-class SEIGES_API AAICharacterBase : public ACharacter
+UCLASS()
+class SEIGES_API AAICharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AAICharacterBase();
+	AAICharacter();
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = AIFunctions)
-		class UBehaviorTree* BehaviorTree;
-
-	UFUNCTION(BlueprintCallable, Category = AIFunctions)
-	void SetAITarget() {}; //TODO make this.
-
+	UPROPERTY(EditAnywhere, Category = Behavior)
+	class UBehaviorTree* BehaviorTree;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-
-	UStaticMeshComponent* Mesh = nullptr;
 
 public:	
 	// Called every frame

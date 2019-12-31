@@ -1,10 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AICharacterBase.h"
+#include "AICharacter.h"
+
 
 // Sets default values
-AAICharacterBase::AAICharacterBase()
+AAICharacter::AAICharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -12,26 +13,28 @@ AAICharacterBase::AAICharacterBase()
 }
 
 // Called when the game starts or when spawned
-void AAICharacterBase::BeginPlay()
+void AAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	Mesh = FindComponentByClass<UStaticMeshComponent>();
-	if(Mesh == nullptr) {UE_LOG(LogTemp,Error,TEXT("Missing static mesh for %s"),*GetNameSafe(this)) }
-
-	
-
 }
 
 // Called every frame
-void AAICharacterBase::Tick(float DeltaTime)
+void AAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	/*auto StartPos = GetActorLocation();
+	FVector PlayerPos = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+
+	FVector Direction = PlayerPos - StartPos;
+	Direction.Normalize();
+
+	SetActorLocation(StartPos + Direction);
+*/
 }
 
 // Called to bind functionality to input
-void AAICharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 

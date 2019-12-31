@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "AICharacterBase.h"
+#include "AICharacter.h"
 #include "AISpawner.generated.h"
 
 UCLASS(Blueprintable)
@@ -32,6 +32,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UINT BotCount = 0;
 
 	
 

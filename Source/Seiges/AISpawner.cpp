@@ -37,11 +37,16 @@ void AAISpawner::SpawnBot()
 		return;
 	}
 
-	AAICharacterBase* ActorSpawned = GetWorld()->SpawnActor<AAICharacterBase>(
+	AAICharacter* ActorSpawned = GetWorld()->SpawnActor<AAICharacter>(
 									BotList[0],
 									GetActorLocation() + FVector(0.0f, 0.0f, -50.0f),
 									FRotator::ZeroRotator, SpawnParams);
-	
+	BotCount++;
+	if (BotCount > 10)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(BotSpawnTimerHandle);
+		//BeginDestroy();
+	}
 }
 
 // Called every frame
@@ -60,8 +65,9 @@ void AAISpawner::Tick(float DeltaTime)
 
 void AAISpawner::BeginDestroy()
 {
-
-
+	
+	//GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	
 
 	Super::BeginDestroy();
 }

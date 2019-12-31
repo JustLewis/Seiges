@@ -5,14 +5,13 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
-#include "BehaviorTree/BlackBoardComponent.h"
-#include "StructureToDefend.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "MainAIController.generated.h"
 
 /**
  * 
  */
-UCLASS(Blueprintable)
+UCLASS(ClassGroup = AI, BlueprintType, Blueprintable)
 class SEIGES_API AMainAIController : public AAIController
 {
 	GENERATED_BODY()
@@ -20,13 +19,14 @@ public:
 	AMainAIController();
 
 	virtual void OnPossess(APawn* InPawn) override;
-
+	
 	FBlackboard::FKey TargetKeyID;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AIProperties)
-	UObject* TargetObject;
+	UBlackboardComponent* GetBlackBoard();
 
-private:
-	UBehaviorTreeComponent* BTComp;
-	UBlackboardComponent* BBComp;
+protected:
+
+	UBehaviorTreeComponent* BehaviorComponent;
+	UBlackboardComponent* BlackBoardComponent;
+	
 };
