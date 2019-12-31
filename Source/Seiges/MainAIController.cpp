@@ -31,7 +31,20 @@ void AMainAIController::OnPossess(APawn * InPawn)
 
 }
 
-UBlackboardComponent * AMainAIController::GetBlackBoard()
+void AMainAIController::Jump()
 {
-	return BlackBoardComponent;
+	if (OwnedCharacter) 
+	{
+	OwnedCharacter->Jump();
+	}
 }
+
+void AMainAIController::SetOwnedCharacter(ACharacter * CharacterIn)
+{
+	OwnedCharacter = CharacterIn;
+}
+
+//UBlackboardComponent * AMainAIController::GetBlackBoard()
+//{
+//	return BlackBoardComponent;
+//}

@@ -19,7 +19,9 @@ UMyBTTask_MoveToTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 		ACharacter* Target = Cast<ACharacter>(Blackboard->GetValue<UBlackboardKeyType_Object>(ControlledAI->TargetKeyID));
 		if (Target)
 		{
+			ControlledAI->Jump();
 			ControlledAI->MoveToActor(Target, 5.0f);
+			
 			return EBTNodeResult::Succeeded;
 		}
 	}

@@ -2,7 +2,7 @@
 
 
 #include "AICharacter.h"
-
+#include "MainAIController.h"
 
 // Sets default values
 AAICharacter::AAICharacter()
@@ -16,6 +16,13 @@ AAICharacter::AAICharacter()
 void AAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	AMainAIController* Controller = Cast<AMainAIController>(GetController());
+	Controller->SetOwnedCharacter(this);
+}
+
+void AAICharacter::Jump()
+{
+	ACharacter::Jump();
 }
 
 // Called every frame
@@ -23,6 +30,7 @@ void AAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	///Simple movement ai
 	/*auto StartPos = GetActorLocation();
 	FVector PlayerPos = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
 

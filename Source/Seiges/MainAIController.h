@@ -22,9 +22,15 @@ public:
 	
 	FBlackboard::FKey TargetKeyID;
 
-	UBlackboardComponent* GetBlackBoard();
+	//UBlackboardComponent* GetBlackBoard(); //Don't need this
+
+	void Jump();
+
+	void SetOwnedCharacter(ACharacter* CharacterIn);
 
 protected:
+
+	ACharacter* OwnedCharacter;
 
 	UBehaviorTreeComponent* BehaviorComponent;
 	UBlackboardComponent* BlackBoardComponent;
