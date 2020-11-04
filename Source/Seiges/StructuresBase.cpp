@@ -43,15 +43,33 @@ void AStructuresBase::Death()
 
 }
 
+void AStructuresBase::SettingLocation()
+{
+	if (GetActorLocation().Z > StartLocation.Z)
+	{
+		SetActorLocation(GetActorLocation() + FVector(0.0f, 0.0f, -100.0f));
+		return;
+	}
+	else
+	{
+		FVector CurrentLoc = GetActorLocation();
+		SetActorLocation(FVector(CurrentLoc.X, CurrentLoc.Y, 1.0f));
+		bLocationHappy = true;
+		return;
+	}
+}
+
 void AStructuresBase::Activate()
 {
+	StartLocation = GetActorLocation();
+	bLocationHappy = false;
+	SetActorLocation(FVector(StartLocation.X,StartLocation.Y,StartLocation.Z + 5000.0f));
 	if (Mesh == nullptr)
 	{
 		return;
 	}
 
-	Mesh->SetSimulatePhysics(true);
-	Mesh->SetSimulatePhysics(true);
+	//Mesh->SetSimulatePhysics(true);
 	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	
 }
@@ -82,6 +100,9 @@ void AStructuresBase::SpawnWithLocationAndRotation(FVector LocationIn, FRotator 
 void AStructuresBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	if (bLocationHappy == false) { SettingLocation(); }
+	
 }
 
 // Called to bind functionality to input

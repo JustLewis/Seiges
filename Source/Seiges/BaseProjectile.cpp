@@ -3,6 +3,7 @@
 
 #include "BaseProjectile.h"
 
+
 // Sets default values
 ABaseProjectile::ABaseProjectile()
 {
@@ -15,6 +16,7 @@ ABaseProjectile::ABaseProjectile()
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
 	CollisionComp->OnComponentHit.AddDynamic(this, &ABaseProjectile::OnHit);	// set up a notification for when this component hits something blocking
 
+
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
 	CollisionComp->CanCharacterStepUpOn = ECB_No;
@@ -24,11 +26,13 @@ ABaseProjectile::ABaseProjectile()
 
 	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
-	ProjectileMovement->UpdatedComponent = CollisionComp;
+	ProjectileMovement->SetUpdatedComponent(CollisionComp);
+	//ProjectileMovement->UpdatedComponent = CollisionComp;
 	ProjectileMovement->InitialSpeed = 3000.f;
 	ProjectileMovement->MaxSpeed = 3000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = true;
+	ProjectileMovement->Bounciness = 0.5f;
 
 	///This is set in the editor, doesn't destroy the actor if set here.
 	//InitialLifeSpan = 3.0f;
@@ -36,9 +40,15 @@ ABaseProjectile::ABaseProjectile()
 }
 
 
+void ABaseProjectile::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	SetActorScale3D(GetActorScale() * FVector(0.9f));
+}
+
 void ABaseProjectile::OnHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
 {
-	
+	UE_LOG(LogTemp,Warning,TEXT("I'm hittnig something %s"),*OtherActor->GetName())
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL))
 	{

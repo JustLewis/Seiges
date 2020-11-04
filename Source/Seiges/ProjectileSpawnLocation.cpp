@@ -21,16 +21,17 @@ void UProjectileSpawnLocation::SpawnProjectileWithVelocity(float VelocityIn)
 	{
 		const FRotator PlayerRotation = GetComponentRotation();
 		const FVector Playerlocation = GetComponentLocation();
-		for (size_t i = 0; i < 3; i++) {
+		for (size_t i = 0; i < 1; i++) {
 
 			float XOffset = FMath::FRandRange(-SprayAmount, SprayAmount);
 			float YOffset = FMath::FRandRange(-SprayAmount, SprayAmount);
 
 			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+			//ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-			World->SpawnActor<ABaseProjectile>(Projectile, Playerlocation +
-				(PlayerRotation.Vector() * 10.0f), PlayerRotation + FRotator(XOffset, YOffset, 0.0f), ActorSpawnParams);
+			World->SpawnActor<ABaseProjectile>(Projectile, Playerlocation /*+
+				(PlayerRotation.Vector() * 10.0f)*/, PlayerRotation + FRotator(XOffset, YOffset, 0.0f), ActorSpawnParams);
 		}
 	}
 }
@@ -46,9 +47,8 @@ void UProjectileSpawnLocation::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
-}
 
+}
 
 // Called every frame
 void UProjectileSpawnLocation::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

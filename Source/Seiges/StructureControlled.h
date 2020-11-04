@@ -23,11 +23,15 @@ public:
 
 	UProjectileSpawnLocation* ProjectileSpawner;
 
-	APawn* Target;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = Structure)
+	AActor * Target;
 
 	FVector TargetLocation;
 
 	virtual void Activate() override;
+
+	UFUNCTION(BlueprintCallable, Category = Structure)
+	void MakeStructureInactive();
 
 protected:
 	// Called when the game starts or when spawned

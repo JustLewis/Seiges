@@ -13,10 +13,11 @@
 
 #include "PlayerCharacter.generated.h"
 
+
 class MyPlayerState
 {
 public:
-	virtual ~MyPlayerState() {}
+	virtual ~MyPlayerState(){}
 
 	virtual void Activate() {}
 	virtual void Deactivate() {}
@@ -31,6 +32,7 @@ public:
 
 	virtual void ScrollUp(APlayerCharacter* PlayerIn) {}
 	virtual void ScrollDown(APlayerCharacter* PlayerIn) {}
+
 };
 
 class WeaponState : public MyPlayerState
@@ -66,6 +68,9 @@ public:
 	void ScrollUp(APlayerCharacter* PlayerIn) override;
 	void ScrollDown(APlayerCharacter* PlayerIn) override;
 
+private:
+	FVector ActorLocation;
+
 };
 
 class BuildStateSecond : public MyPlayerState
@@ -91,7 +96,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, Category = AIFunctions)
-		void SetAITarget() {}; //TODO make this.
+	void SetAITarget() {}; //TODO make this.
 
 	APlayerCharacter();
 	~APlayerCharacter();

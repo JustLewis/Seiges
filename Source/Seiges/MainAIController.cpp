@@ -15,7 +15,9 @@ AMainAIController::AMainAIController()
 
 void AMainAIController::OnPossess(APawn * InPawn)
 {
+	
 	Super::OnPossess(InPawn);
+
 
 	AAICharacter* ControlledCharacter = Cast<AAICharacter>(InPawn);
 
@@ -41,7 +43,10 @@ void AMainAIController::Jump()
 
 void AMainAIController::SetOwnedCharacter(ACharacter * CharacterIn)
 {
-	OwnedCharacter = CharacterIn;
+	if (CharacterIn) 
+	{
+		OwnedCharacter = CharacterIn;
+	}
 }
 
 //UBlackboardComponent * AMainAIController::GetBlackBoard()

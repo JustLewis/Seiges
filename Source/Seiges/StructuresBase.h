@@ -35,6 +35,10 @@ protected:
 
 	UStaticMeshComponent* Mesh = nullptr;
 
+	FVector StartLocation;
+	bool bLocationHappy = true;
+
+	void SettingLocation();
 
 	
 public:	

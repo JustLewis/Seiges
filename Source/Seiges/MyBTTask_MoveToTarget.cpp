@@ -16,11 +16,12 @@ UMyBTTask_MoveToTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* No
 	if(ControlledAI == nullptr) {UE_LOG(LogTemp,Error,TEXT("Move To Target Tasknode Ownercomp cast is null pointer"))}
 	else
 	{
-		ACharacter* Target = Cast<ACharacter>(Blackboard->GetValue<UBlackboardKeyType_Object>(ControlledAI->TargetKeyID));
+		AActor* Target = Cast<AActor>(Blackboard->GetValue<UBlackboardKeyType_Object>(ControlledAI->TargetKeyID));
 		if (Target)
 		{
 			ControlledAI->Jump();
 			ControlledAI->MoveToActor(Target, 5.0f);
+		
 			
 			return EBTNodeResult::Succeeded;
 		}

@@ -294,21 +294,6 @@ void WeaponState::Tick(APlayerCharacter * PlayerIn)
 MyPlayerState * BuildState::Action(APlayerCharacter* PlayerIn)
 {
 	DrawDebugSphere(PlayerIn->GetWorld(), PlayerIn->LineTraceHitResult().Location, 5.0f, 10, FColor::Red, false, 3.0f);
-
-	/*FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = NULL;
-
-	if (PlayerIn->StructureList[PlayerIn->GetStructureIterator()] == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Structure list empty?"));
-		return new BuildState; 
-	}
-
-	AStructuresBase* ActorSpawned =  PlayerIn->GetWorld()->SpawnActor<AStructuresBase>(
-								PlayerIn->StructureList[PlayerIn->GetStructureIterator()],
-								PlayerIn->LineTraceHitResult().Location + FVector(0.0f, 0.0f, 1.0f),
-								FRotator::ZeroRotator, SpawnParams);
-	PlayerIn->SetControlledStructure(ActorSpawned);*/
 	
 	PlayerIn->bRotationEnabled = false;
 
@@ -432,7 +417,7 @@ MyPlayerState * BuildStateSecond::Action(APlayerCharacter * PlayerIn)
 
 	PlayerIn->SetControlledStructure(nullptr);
 	PlayerIn->bRotationEnabled = true;
-	return new BuildState;
+	return new WeaponState;
 }
 
 MyPlayerState * BuildStateSecond::AltAction(APlayerCharacter * PlayerIn)
@@ -441,7 +426,7 @@ MyPlayerState * BuildStateSecond::AltAction(APlayerCharacter * PlayerIn)
 	if (!Structure)
 	{
 		UE_LOG(LogTemp, Error, TEXT("No controlled structure found"));
-		PlayerIn->bRotationEnabled = true;
+		PlayerIn->bRotationEnabled = true; //Temporary fix
 		return new BuildState;
 	}
 	
@@ -452,7 +437,7 @@ MyPlayerState * BuildStateSecond::AltAction(APlayerCharacter * PlayerIn)
 	FDamageEvent DamageEvent(ValidDamageTypeClass);
 	Structure->TakeDamage(1000.0f, DamageEvent, PlayerIn->GetController(), PlayerIn);
 
-	PlayerIn->bRotationEnabled = true;
+	PlayerIn->bRotationEnabled = true;//Temporary fix
 	
 	return new BuildState;
 }

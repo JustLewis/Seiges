@@ -18,9 +18,17 @@ void UBTService_FindTarget::TickNode(UBehaviorTreeComponent & OwnerComp, uint8 *
 
 	if (AIController)
 	{
-		APawn* Target = GetWorld()->GetFirstPlayerController()->GetPawn();
-		OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Object>(AIController->TargetKeyID, Target);
-		UE_LOG(LogTemp, Warning, TEXT("Ai has choosen target; %s"), *Target->GetName());
+		//APawn* TargetActor = GetWorld()->GetFirstPlayerController()->GetPawn();
+		AActor* TargetActor = AIController->Target;
+		OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Object>(AIController->TargetKeyID, TargetActor);
+		if (TargetActor)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Ai has choosen target; %s"), *TargetActor->GetName());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Ai has null pointer as target"));
+		}
 	}
 
 }

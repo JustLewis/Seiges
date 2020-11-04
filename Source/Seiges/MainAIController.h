@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "StructureToDefend.h"
 #include "MainAIController.generated.h"
 
 /**
@@ -27,6 +28,8 @@ public:
 	void Jump();
 
 	void SetOwnedCharacter(ACharacter* CharacterIn);
+
+	AActor* Target;
 
 protected:
 

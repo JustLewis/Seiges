@@ -22,7 +22,7 @@ void AAICharacter::BeginPlay()
 
 void AAICharacter::Jump()
 {
-	ACharacter::Jump();
+	//ACharacter::Jump();
 }
 
 // Called every frame

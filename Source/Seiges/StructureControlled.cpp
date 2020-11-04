@@ -16,6 +16,11 @@ void AStructureControlled::Activate()
 	bIsActive = true;
 }
 
+void AStructureControlled::MakeStructureInactive()
+{
+	bIsActive = false;
+}
+
 void AStructureControlled::BeginPlay()
 {
 	Super::BeginPlay();
@@ -26,9 +31,9 @@ void AStructureControlled::BeginPlay()
 	if (!GetWorld()) { UE_LOG(LogTemp, Error, TEXT("Unable to get world in structure: %s"), *GetNameSafe(this)); return; }
 	if (!GetWorld()->GetFirstPlayerController()) { UE_LOG(LogTemp, Error, TEXT("Unable to get first player controller in structure: %s"), *GetNameSafe(this)); return; }
 
-	Target = GetWorld()->GetFirstPlayerController()->GetPawn();
+	//Target = GetWorld()->GetFirstPlayerController()->GetPawn();
 
-	TargetLocation = Target->GetActorLocation();
+	//TargetLocation = Target->GetActorLocation();
 	
 }
 
@@ -44,7 +49,7 @@ void AStructureControlled::Tick(float DeltaTime)
 		}
 
 		FRotator TargetDirection = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), TargetLocation);
-
-		SetActorRotation(TargetDirection, ETeleportType::None);
+		
+		SetActorRotation(FRotator(0.0f,TargetDirection.Yaw,0.0f), ETeleportType::None);
 	}
 }
